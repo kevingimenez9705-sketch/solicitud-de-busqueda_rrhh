@@ -1,0 +1,1460 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solicitud Búsqueda de Personal</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root {
+    --navy: #1a1a6e;
+    --purple: #4a3fa0;
+    --purple-light: #6b5fb5;
+    --accent: #f0a500;
+    --white: #ffffff;
+    --gray-light: #f5f5f5;
+    --gray-border: #d0d0d0;
+    --gray-text: #444;
+    --success: #2ecc71;
+    --danger: #e74c3c;
+    --shadow: 0 2px 12px rgba(26,26,110,0.10);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #e8e8f0;
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* HEADER APP */
+  .app-header {
+    background: var(--navy);
+    color: white;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+  .app-header h1 { font-size: 1rem; font-weight: 700; letter-spacing: 0.5px; }
+  .app-header span { font-size: 0.75rem; opacity: 0.7; }
+
+  .btn-header {
+    background: var(--accent);
+    color: var(--navy);
+    border: none;
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.82rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: opacity 0.2s;
+  }
+  .btn-header:hover { opacity: 0.85; }
+
+  /* MAIN WRAPPER */
+  .main-wrap {
+    max-width: 860px;
+    margin: 24px auto;
+    padding: 0 16px 60px;
+  }
+
+  /* FORM CARD */
+  .form-card {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+
+  /* FORM HEADER */
+  .form-header {
+    background: var(--navy);
+    padding: 22px 28px 18px;
+    border-bottom: 4px solid var(--accent);
+  }
+  .form-header h2 {
+    color: white;
+    font-size: 1.35rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .form-header p {
+    color: rgba(255,255,255,0.7);
+    font-size: 0.78rem;
+    margin-top: 3px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  /* FORM META ROW */
+  .form-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 28px;
+    background: #f9f9fc;
+    border-bottom: 1px solid var(--gray-border);
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .form-meta .fecha-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+    color: var(--gray-text);
+    font-weight: 600;
+  }
+  .form-meta input[type="date"],
+  .form-meta input[type="text"] {
+    border: 1px solid var(--gray-border);
+    border-radius: 4px;
+    padding: 5px 8px;
+    font-size: 0.82rem;
+    color: var(--navy);
+    font-weight: 600;
+  }
+  .solicitud-num {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+    color: var(--gray-text);
+    font-weight: 600;
+  }
+  .solicitud-num span { color: var(--navy); font-weight: 700; font-size: 1rem; }
+
+  /* SECTIONS */
+  .section {
+    padding: 0;
+  }
+  .section-title {
+    background: var(--purple);
+    color: white;
+    padding: 9px 28px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+  .section-body {
+    padding: 18px 28px;
+    border-bottom: 1px solid #eee;
+  }
+
+  /* GRID FIELDS */
+  .field-grid {
+    display: grid;
+    gap: 14px 18px;
+  }
+  .fg-2 { grid-template-columns: 1fr 1fr; }
+  .fg-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .fg-1-2 { grid-template-columns: 1fr 2fr; }
+  .fg-2-1 { grid-template-columns: 2fr 1fr; }
+  .fg-1-1-1 { grid-template-columns: 1fr 1fr 1fr; }
+
+  .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .field-group label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--purple);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+  .field-group input,
+  .field-group select,
+  .field-group textarea {
+    border: none;
+    border-bottom: 1.5px solid var(--gray-border);
+    padding: 6px 2px;
+    font-size: 0.88rem;
+    color: var(--navy);
+    background: transparent;
+    outline: none;
+    transition: border-color 0.2s;
+    font-family: inherit;
+  }
+  .field-group input:focus,
+  .field-group select:focus,
+  .field-group textarea:focus {
+    border-bottom-color: var(--purple);
+  }
+  .field-group textarea {
+    resize: vertical;
+    min-height: 70px;
+    border: 1.5px solid var(--gray-border);
+    border-radius: 4px;
+    padding: 8px;
+  }
+  .field-group textarea:focus {
+    border-color: var(--purple);
+  }
+
+  /* INLINE FIELDS ROW */
+  .field-row {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  /* CHECKBOX GROUP */
+  .check-group {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .check-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.82rem;
+    color: var(--gray-text);
+    cursor: pointer;
+    font-weight: 500;
+  }
+  .check-item input[type="checkbox"],
+  .check-item input[type="radio"] {
+    width: 14px;
+    height: 14px;
+    accent-color: var(--purple);
+    cursor: pointer;
+  }
+
+  /* STUDY LEVEL TABLE */
+  .study-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .study-table td {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    color: var(--gray-text);
+    vertical-align: middle;
+  }
+  .study-table td:first-child {
+    font-weight: 700;
+    color: var(--navy);
+    width: 130px;
+    padding-left: 0;
+  }
+  .study-check {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* SEPARADOR */
+  .sep { height: 1px; background: #eee; margin: 14px 0; }
+
+  /* FIRMAS */
+  .firmas-header {
+    padding: 14px 28px 6px;
+    font-size: 0.75rem;
+    color: #888;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .firmas-header strong { color: var(--navy); }
+  .firmas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    padding: 10px 28px 24px;
+  }
+  .firma-card {
+    border: 1.5px solid var(--gray-border);
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fafafa;
+  }
+  .firma-card-header {
+    background: var(--navy);
+    color: white;
+    padding: 7px 12px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-transform: uppercase;
+  }
+  .badge {
+    font-size: 0.6rem;
+    padding: 2px 7px;
+    border-radius: 20px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    background: rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.7);
+  }
+  .badge.signed { background: var(--success); color: white; }
+
+  .firma-canvas-wrap {
+    position: relative;
+    background: white;
+    height: 110px;
+    cursor: crosshair;
+  }
+  .firma-canvas-wrap canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .firma-placeholder {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    color: #ccc;
+    font-size: 0.75rem;
+    pointer-events: none;
+    text-align: center;
+    font-style: italic;
+  }
+  .firma-clear {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: rgba(0,0,0,0.1);
+    border: none;
+    border-radius: 4px;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+  }
+  .firma-name-input {
+    width: 100%;
+    border: none;
+    border-top: 1px solid var(--gray-border);
+    padding: 7px 10px;
+    font-size: 0.78rem;
+    text-align: center;
+    color: var(--navy);
+    font-weight: 600;
+    background: white;
+    outline: none;
+    font-family: inherit;
+  }
+  .firma-name-input::placeholder { color: #bbb; font-weight: 400; }
+  .firma-confirm-btn {
+    width: 100%;
+    background: var(--navy);
+    color: white;
+    border: none;
+    padding: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: background 0.2s;
+  }
+  .firma-confirm-btn:hover { background: var(--purple); }
+  .firma-confirm-btn.confirmed { background: var(--success); cursor: default; }
+
+  /* ACTIONS */
+  .actions-bar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 20px 28px;
+    border-top: 1px solid #eee;
+    flex-wrap: wrap;
+  }
+  .btn {
+    padding: 10px 22px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+  .btn-outline {
+    background: transparent;
+    border: 2px solid var(--navy);
+    color: var(--navy);
+  }
+  .btn-outline:hover { background: var(--navy); color: white; }
+  .btn-pdf {
+    background: var(--accent);
+    color: var(--navy);
+  }
+  .btn-pdf:hover { opacity: 0.85; }
+  .btn-send {
+    background: var(--navy);
+    color: white;
+  }
+  .btn-send:hover { background: var(--purple); }
+  .btn-send:disabled {
+    background: #aaa;
+    cursor: not-allowed;
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--navy);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    z-index: 9999;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    animation: slideIn 0.3s ease;
+  }
+  .toast.show { display: flex; }
+  .toast.success { background: var(--success); }
+  .toast.error { background: var(--danger); }
+  @keyframes slideIn {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  /* MODAL CONFIG */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: white;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 480px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.3);
+  }
+  .modal-header {
+    background: var(--navy);
+    color: white;
+    padding: 16px 22px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-close { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; }
+  .modal-body { padding: 22px; display: flex; flex-direction: column; gap: 14px; }
+  .modal-field { display: flex; flex-direction: column; gap: 5px; }
+  .modal-field label { font-size: 0.75rem; font-weight: 700; color: var(--purple); text-transform: uppercase; }
+  .modal-field input {
+    border: 1.5px solid var(--gray-border);
+    border-radius: 6px;
+    padding: 9px 12px;
+    font-size: 0.88rem;
+    outline: none;
+    font-family: inherit;
+  }
+  .modal-field input:focus { border-color: var(--purple); }
+  .modal-field small { color: #888; font-size: 0.72rem; }
+  .modal-footer { padding: 14px 22px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 10px; }
+
+  /* PROGRESS BAR */
+  .progress-bar {
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--purple));
+    transition: width 0.4s;
+    width: 0%;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    .main-wrap { padding: 0 8px 60px; }
+    .form-header { padding: 16px 16px 12px; }
+    .section-body { padding: 14px 16px; }
+    .fg-2, .fg-3, .fg-1-2, .fg-2-1, .fg-1-1-1 { grid-template-columns: 1fr; }
+    .firmas-grid { padding: 10px 16px 20px; }
+    .actions-bar { padding: 16px; }
+    .form-meta { padding: 12px 16px; }
+    .firmas-header { padding: 12px 16px 4px; }
+  }
+
+  /* PRINT AREA */
+  #pdf-preview-area { display: none; }
+</style>
+</head>
+<body>
+
+<!-- APP HEADER -->
+<div class="app-header">
+  <div>
+    <div style="font-size:0.65rem;opacity:0.6;letter-spacing:1px;text-transform:uppercase">Gerencia de Recursos Humanos</div>
+    <h1>Solicitud Búsqueda de Personal</h1>
+  </div>
+  <button class="btn-header" onclick="openConfig()">⚙ Configurar</button>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- MAIN -->
+<div class="main-wrap">
+<div class="form-card">
+
+  <!-- FORM HEADER -->
+  <div class="form-header">
+    <h2>Solicitud Búsqueda de Personal</h2>
+    <p>Definición de Perfil y Condiciones de Contratación</p>
+  </div>
+
+  <!-- META ROW -->
+  <div class="form-meta">
+    <div class="fecha-row">
+      <span>Fecha:</span>
+      <input type="date" id="fecha" />
+    </div>
+    <div class="solicitud-num">
+      <span style="font-weight:400;color:#888">N° de solicitud:</span>
+      <span id="numSolicitud">—</span>
+    </div>
+  </div>
+
+  <!-- SECCIÓN: DEPARTAMENTO SOLICITANTE -->
+  <div class="section">
+    <div class="section-title">Departamento Solicitante</div>
+    <div class="section-body">
+      <div class="field-grid fg-2" style="margin-bottom:14px">
+        <div class="field-group">
+          <label>Departamento</label>
+          <input type="text" id="departamento" placeholder="Nombre del departamento" />
+        </div>
+        <div class="field-group">
+          <label>Cargo / Puesto</label>
+          <input type="text" id="cargo" placeholder="Nombre del cargo" />
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field-group" style="flex:0 0 auto">
+          <label>Personal a Cargo</label>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:4px">
+            <label class="check-item">
+              <input type="radio" name="personalCargo" value="Si" /> Sí
+            </label>
+            <label class="check-item">
+              <input type="radio" name="personalCargo" value="No" checked /> No
+            </label>
+            <div class="field-group" style="flex-direction:row;align-items:center;gap:6px">
+              <label style="margin:0">N°</label>
+              <input type="number" id="numPersonal" min="0" style="width:55px" placeholder="0" />
+            </div>
+          </div>
+        </div>
+        <div class="field-group" style="flex:0 0 auto">
+          <label>¿Es una búsqueda confidencial?</label>
+          <div class="check-group" style="margin-top:4px">
+            <label class="check-item"><input type="radio" name="confidencial" value="Si" /> Sí</label>
+            <label class="check-item"><input type="radio" name="confidencial" value="No" checked /> No</label>
+          </div>
+        </div>
+        <div class="field-group" style="flex:1">
+          <label>Motivo de la Vacante</label>
+          <div class="check-group" style="margin-top:4px">
+            <label class="check-item"><input type="checkbox" name="motivo" value="Expansion" /> Expansión</label>
+            <label class="check-item"><input type="checkbox" name="motivo" value="Rotacion" /> Rotación</label>
+            <label class="check-item"><input type="checkbox" name="motivo" value="Temporada" /> Temporada</label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN: PERFIL DEL CANDIDATO -->
+  <div class="section">
+    <div class="section-title">Perfil del Candidato</div>
+    <div class="section-body">
+      <div class="field-grid fg-3" style="margin-bottom:14px">
+        <div class="field-group">
+          <label>Rango de Edad</label>
+          <input type="text" id="rangoEdad" placeholder="Ej: 25 - 40 años" />
+        </div>
+        <div class="field-group">
+          <label>Sexo</label>
+          <select id="sexo">
+            <option value="">Seleccionar...</option>
+            <option>Indistinto</option>
+            <option>Masculino</option>
+            <option>Femenino</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label>Zona de Residencia</label>
+          <input type="text" id="zonaResidencia" placeholder="Ej: GBA Norte" />
+        </div>
+      </div>
+      <div class="field-grid fg-3">
+        <div class="field-group">
+          <label>Movilidad</label>
+          <select id="movilidad">
+            <option value="">Seleccionar...</option>
+            <option>No requerida</option>
+            <option>Vehículo propio</option>
+            <option>Moto propia</option>
+            <option>Licencia de conducir</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label>Licencia Requerida</label>
+          <input type="text" id="licencia" placeholder="Ej: B1, A2..." />
+        </div>
+        <div class="field-group">
+          <label>Se Abonará Viáticos</label>
+          <select id="viaticos">
+            <option value="">Seleccionar...</option>
+            <option>Sí</option>
+            <option>No</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN: NIVEL DE ESTUDIOS -->
+  <div class="section">
+    <div class="section-title">Nivel de Estudios Alcanzados</div>
+    <div class="section-body">
+      <div class="field-group" style="margin-bottom:16px">
+        <label>Título Requerido</label>
+        <input type="text" id="tituloReq" placeholder="Ej: Licenciado en Administración" />
+      </div>
+      <table class="study-table">
+        <tr>
+          <td>Secundario:</td>
+          <td>
+            <div class="study-check">
+              <label class="check-item"><input type="radio" name="secundario" value="Completo" /> Completo</label>
+              <label class="check-item"><input type="radio" name="secundario" value="Incompleto" /> Incompleto</label>
+              <label class="check-item"><input type="radio" name="secundario" value="NA" checked /> N/A</label>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>Terciario:</td>
+          <td>
+            <div class="study-check">
+              <label class="check-item"><input type="radio" name="terciario" value="Completo" /> Completo</label>
+              <label class="check-item"><input type="radio" name="terciario" value="Incompleto" /> Incompleto</label>
+              <label class="check-item"><input type="radio" name="terciario" value="NA" checked /> N/A</label>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>Universitario:</td>
+          <td>
+            <div class="study-check">
+              <label class="check-item"><input type="radio" name="universitario" value="Completo" /> Completo</label>
+              <label class="check-item"><input type="radio" name="universitario" value="Incompleto" /> Incompleto</label>
+              <label class="check-item"><input type="radio" name="universitario" value="NA" checked /> N/A</label>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- SECCIÓN: ANTIGÜEDAD REQUERIDA -->
+  <div class="section">
+    <div class="section-title">Antigüedad Requerida</div>
+    <div class="section-body">
+      <div class="field-grid fg-2" style="margin-bottom:14px">
+        <div class="field-group">
+          <label>Años de Experiencia Mínima</label>
+          <input type="number" id="anosExp" min="0" placeholder="Ej: 2" />
+        </div>
+        <div class="field-group">
+          <label>Posiciones Anteriores</label>
+          <input type="text" id="posAnteriores" placeholder="Ej: Vendedor, Supervisor..." />
+        </div>
+      </div>
+      <div class="field-group">
+        <label>Competencias Requeridas</label>
+        <textarea id="competencias" placeholder="Describí las competencias, habilidades y conocimientos necesarios para el puesto..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN: CONDICIONES DE CONTRATACIÓN -->
+  <div class="section">
+    <div class="section-title">Condiciones de Contratación</div>
+    <div class="section-body">
+      <div class="field-grid fg-2" style="margin-bottom:14px">
+        <div class="field-group">
+          <label>Tipo de Contratación</label>
+          <select id="tipoContrato">
+            <option value="">Seleccionar...</option>
+            <option>Relación de dependencia - Full time</option>
+            <option>Relación de dependencia - Part time</option>
+            <option>Contrato por tiempo determinado</option>
+            <option>Pasantía</option>
+            <option>Locación de servicios</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label>Modalidad de Trabajo</label>
+          <select id="modalidad">
+            <option value="">Seleccionar...</option>
+            <option>Presencial</option>
+            <option>Remoto</option>
+            <option>Híbrido</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-grid fg-3">
+        <div class="field-group">
+          <label>Rango Salarial ($)</label>
+          <input type="text" id="rangoSalario" placeholder="Ej: 500.000 - 700.000" />
+        </div>
+        <div class="field-group">
+          <label>Fecha Inicio Estimada</label>
+          <input type="date" id="fechaInicio" />
+        </div>
+        <div class="field-group">
+          <label>Prioridad de Búsqueda</label>
+          <select id="prioridad">
+            <option value="">Seleccionar...</option>
+            <option>Alta</option>
+            <option>Media</option>
+            <option>Baja</option>
+          </select>
+        </div>
+      </div>
+      <div class="sep"></div>
+      <div class="field-group">
+        <label>Beneficios Adicionales</label>
+        <textarea id="beneficios" placeholder="Ej: Obra social, comedor, bonos, home office, etc..." style="min-height:55px"></textarea>
+      </div>
+      <div class="sep"></div>
+      <div class="field-group">
+        <label>Descripción del Puesto / Tareas Principales</label>
+        <textarea id="descripcionPuesto" placeholder="Describí las principales responsabilidades y tareas del puesto..." style="min-height:90px"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- FIRMAS -->
+  <div class="section">
+    <div class="section-title">Firmas de Autorización</div>
+    <div class="firmas-header">
+      <strong>Firmas: <span id="firmasCount">0</span> / 4 completadas</strong>
+      <span>Cada persona firma desde su dispositivo</span>
+    </div>
+    <div class="firmas-grid">
+      <!-- Jefe/Zonal -->
+      <div class="firma-card" id="fc-0">
+        <div class="firma-card-header">
+          Jefe/Zonal
+          <span class="badge" id="badge-0">PENDIENTE</span>
+        </div>
+        <div class="firma-canvas-wrap">
+          <canvas id="canvas-0" width="300" height="110"></canvas>
+          <div class="firma-placeholder" id="ph-0">Dibujá tu firma aquí</div>
+          <button class="firma-clear" onclick="clearFirma(0)" title="Borrar">✕</button>
+        </div>
+        <input class="firma-name-input" id="name-0" type="text" placeholder="Tu nombre completo" />
+        <button class="firma-confirm-btn" id="btn-0" onclick="confirmarFirma(0)">✓ Confirmar mi firma</button>
+      </div>
+      <!-- Gerente -->
+      <div class="firma-card" id="fc-1">
+        <div class="firma-card-header">
+          Gerente
+          <span class="badge" id="badge-1">PENDIENTE</span>
+        </div>
+        <div class="firma-canvas-wrap">
+          <canvas id="canvas-1" width="300" height="110"></canvas>
+          <div class="firma-placeholder" id="ph-1">Dibujá tu firma aquí</div>
+          <button class="firma-clear" onclick="clearFirma(1)" title="Borrar">✕</button>
+        </div>
+        <input class="firma-name-input" id="name-1" type="text" placeholder="Tu nombre completo" />
+        <button class="firma-confirm-btn" id="btn-1" onclick="confirmarFirma(1)">✓ Confirmar mi firma</button>
+      </div>
+      <!-- Director -->
+      <div class="firma-card" id="fc-2">
+        <div class="firma-card-header">
+          Director
+          <span class="badge" id="badge-2">PENDIENTE</span>
+        </div>
+        <div class="firma-canvas-wrap">
+          <canvas id="canvas-2" width="300" height="110"></canvas>
+          <div class="firma-placeholder" id="ph-2">Dibujá tu firma aquí</div>
+          <button class="firma-clear" onclick="clearFirma(2)" title="Borrar">✕</button>
+        </div>
+        <input class="firma-name-input" id="name-2" type="text" placeholder="Tu nombre completo" />
+        <button class="firma-confirm-btn" id="btn-2" onclick="confirmarFirma(2)">✓ Confirmar mi firma</button>
+      </div>
+      <!-- Aprobación RRHH -->
+      <div class="firma-card" id="fc-3">
+        <div class="firma-card-header">
+          Aprobación RRHH
+          <span class="badge" id="badge-3">PENDIENTE</span>
+        </div>
+        <div class="firma-canvas-wrap">
+          <canvas id="canvas-3" width="300" height="110"></canvas>
+          <div class="firma-placeholder" id="ph-3">Dibujá tu firma aquí</div>
+          <button class="firma-clear" onclick="clearFirma(3)" title="Borrar">✕</button>
+        </div>
+        <input class="firma-name-input" id="name-3" type="text" placeholder="Tu nombre completo" />
+        <button class="firma-confirm-btn" id="btn-3" onclick="confirmarFirma(3)">✓ Confirmar mi firma</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="actions-bar">
+    <button class="btn btn-outline" onclick="limpiarFormulario()">🗑 Limpiar</button>
+    <button class="btn btn-pdf" onclick="descargarPDF()">⬇ Descargar PDF</button>
+    <button class="btn btn-send" id="btnEnviar" onclick="enviarSolicitud()" disabled>✉ Enviar solicitud</button>
+  </div>
+
+</div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span id="toastIcon">✓</span>
+  <span id="toastMsg">Mensaje</span>
+</div>
+
+<!-- MODAL CONFIGURACIÓN -->
+<div class="modal-overlay" id="modalConfig">
+  <div class="modal">
+    <div class="modal-header">
+      ⚙ Configuración de Integración
+      <button class="modal-close" onclick="closeConfig()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:0.82rem;color:#666;margin-bottom:4px">
+        Ingresá tus credenciales para conectar con Supabase y Google Drive.
+      </p>
+      <div class="modal-field">
+        <label>Supabase URL</label>
+        <input type="text" id="cfg-sbUrl" placeholder="https://xxxx.supabase.co" />
+        <small>Encontralo en Supabase → Settings → API</small>
+      </div>
+      <div class="modal-field">
+        <label>Supabase Anon Key</label>
+        <input type="text" id="cfg-sbKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6..." />
+      </div>
+      <div class="modal-field">
+        <label>Google Drive Folder ID</label>
+        <input type="text" id="cfg-driveId" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms" />
+        <small>El ID está en la URL de la carpeta de Drive</small>
+      </div>
+      <div class="modal-field">
+        <label>Nombre del Área / Empresa</label>
+        <input type="text" id="cfg-empresa" placeholder="Ej: Expremas RRHH" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeConfig()">Cancelar</button>
+      <button class="btn btn-send" onclick="guardarConfig()">Guardar configuración</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================== CONFIG =====================
+let CONFIG = {
+  supabaseUrl: '',
+  supabaseKey: '',
+  driveFolderId: '',
+  empresa: 'RRHH'
+};
+
+function loadConfig() {
+  const saved = localStorage.getItem('rrhh_sbp_config');
+  if (saved) CONFIG = { ...CONFIG, ...JSON.parse(saved) };
+  document.getElementById('cfg-sbUrl').value = CONFIG.supabaseUrl;
+  document.getElementById('cfg-sbKey').value = CONFIG.supabaseKey;
+  document.getElementById('cfg-driveId').value = CONFIG.driveFolderId;
+  document.getElementById('cfg-empresa').value = CONFIG.empresa;
+}
+function guardarConfig() {
+  CONFIG.supabaseUrl = document.getElementById('cfg-sbUrl').value.trim();
+  CONFIG.supabaseKey = document.getElementById('cfg-sbKey').value.trim();
+  CONFIG.driveFolderId = document.getElementById('cfg-driveId').value.trim();
+  CONFIG.empresa = document.getElementById('cfg-empresa').value.trim() || 'RRHH';
+  localStorage.setItem('rrhh_sbp_config', JSON.stringify(CONFIG));
+  closeConfig();
+  showToast('Configuración guardada ✓', 'success');
+}
+function openConfig() {
+  loadConfig();
+  document.getElementById('modalConfig').classList.add('show');
+}
+function closeConfig() {
+  document.getElementById('modalConfig').classList.remove('show');
+}
+
+// ===================== INIT =====================
+window.onload = () => {
+  loadConfig();
+  // Fecha hoy
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('fecha').value = today;
+  // Nro solicitud
+  const num = (parseInt(localStorage.getItem('rrhh_sbp_num') || '0') + 1);
+  localStorage.setItem('rrhh_sbp_num', num);
+  document.getElementById('numSolicitud').textContent = String(num).padStart(3, '0');
+  // Init canvases
+  firmasData.forEach((_, i) => initCanvas(i));
+};
+
+// ===================== FIRMAS =====================
+const firmasData = [
+  { signed: false, dataUrl: '', name: '' },
+  { signed: false, dataUrl: '', name: '' },
+  { signed: false, dataUrl: '', name: '' },
+  { signed: false, dataUrl: '', name: '' }
+];
+
+let drawing = false;
+let activeCanvas = null;
+let lastX = 0, lastY = 0;
+
+function getPos(e, canvas) {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  if (e.touches) {
+    return {
+      x: (e.touches[0].clientX - rect.left) * scaleX,
+      y: (e.touches[0].clientY - rect.top) * scaleY
+    };
+  }
+  return {
+    x: (e.clientX - rect.left) * scaleX,
+    y: (e.clientY - rect.top) * scaleY
+  };
+}
+
+function initCanvas(i) {
+  const canvas = document.getElementById(`canvas-${i}`);
+  const ctx = canvas.getContext('2d');
+  ctx.strokeStyle = '#1a1a6e';
+  ctx.lineWidth = 2;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  function start(e) {
+    if (firmasData[i].signed) return;
+    e.preventDefault();
+    drawing = true;
+    activeCanvas = i;
+    const pos = getPos(e, canvas);
+    lastX = pos.x; lastY = pos.y;
+    document.getElementById(`ph-${i}`).style.display = 'none';
+  }
+  function move(e) {
+    if (!drawing || activeCanvas !== i) return;
+    e.preventDefault();
+    const pos = getPos(e, canvas);
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+    lastX = pos.x; lastY = pos.y;
+  }
+  function end(e) {
+    if (activeCanvas === i) { drawing = false; activeCanvas = null; }
+  }
+
+  canvas.addEventListener('mousedown', start);
+  canvas.addEventListener('mousemove', move);
+  canvas.addEventListener('mouseup', end);
+  canvas.addEventListener('mouseleave', end);
+  canvas.addEventListener('touchstart', start, { passive: false });
+  canvas.addEventListener('touchmove', move, { passive: false });
+  canvas.addEventListener('touchend', end);
+}
+
+function clearFirma(i) {
+  if (firmasData[i].signed) return;
+  const canvas = document.getElementById(`canvas-${i}`);
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  document.getElementById(`ph-${i}`).style.display = '';
+}
+
+function confirmarFirma(i) {
+  if (firmasData[i].signed) return;
+  const canvas = document.getElementById(`canvas-${i}`);
+  const name = document.getElementById(`name-${i}`).value.trim();
+  // Check if canvas has drawing
+  const ctx = canvas.getContext('2d');
+  const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+  const hasDrawing = data.some(val => val !== 0);
+  if (!hasDrawing) { showToast('Por favor dibujá tu firma primero', 'error'); return; }
+  if (!name) { showToast('Por favor ingresá tu nombre completo', 'error'); return; }
+
+  firmasData[i].signed = true;
+  firmasData[i].dataUrl = canvas.toDataURL();
+  firmasData[i].name = name;
+
+  document.getElementById(`badge-${i}`).textContent = 'FIRMADO';
+  document.getElementById(`badge-${i}`).classList.add('signed');
+  document.getElementById(`btn-${i}`).textContent = '✓ Firma confirmada';
+  document.getElementById(`btn-${i}`).classList.add('confirmed');
+  document.getElementById(`name-${i}`).disabled = true;
+  document.getElementById(`fc-${i}`).style.borderColor = '#2ecc71';
+
+  updateFirmasCount();
+}
+
+function updateFirmasCount() {
+  const count = firmasData.filter(f => f.signed).length;
+  document.getElementById('firmasCount').textContent = count;
+  updateProgress();
+  document.getElementById('btnEnviar').disabled = count < 4;
+}
+
+// ===================== PROGRESS =====================
+function updateProgress() {
+  const fields = ['departamento','cargo','rangoEdad','tituloReq','anosExp','competencias','tipoContrato','descripcionPuesto'];
+  let filled = 0;
+  fields.forEach(id => { if (document.getElementById(id).value.trim()) filled++; });
+  const firmasDone = firmasData.filter(f => f.signed).length;
+  const total = fields.length + 4;
+  const pct = Math.round(((filled + firmasDone) / total) * 100);
+  document.getElementById('progressBar').style.width = pct + '%';
+}
+document.querySelectorAll('input,select,textarea').forEach(el => {
+  el.addEventListener('input', updateProgress);
+  el.addEventListener('change', updateProgress);
+});
+
+// ===================== LIMPIAR =====================
+function limpiarFormulario() {
+  if (!confirm('¿Limpiar todos los datos del formulario?')) return;
+  document.querySelectorAll('input:not([type=radio]):not([type=checkbox]), select, textarea').forEach(el => {
+    if (el.id && el.id !== 'fecha') el.value = '';
+  });
+  document.querySelectorAll('input[type=radio]').forEach(el => el.checked = false);
+  document.querySelectorAll('input[type=checkbox]').forEach(el => el.checked = false);
+  firmasData.forEach((f, i) => {
+    f.signed = false; f.dataUrl = ''; f.name = '';
+    clearFirma(i);
+    document.getElementById(`badge-${i}`).textContent = 'PENDIENTE';
+    document.getElementById(`badge-${i}`).classList.remove('signed');
+    document.getElementById(`btn-${i}`).textContent = '✓ Confirmar mi firma';
+    document.getElementById(`btn-${i}`).classList.remove('confirmed');
+    document.getElementById(`name-${i}`).disabled = false;
+    document.getElementById(`name-${i}`).value = '';
+    document.getElementById(`fc-${i}`).style.borderColor = '';
+  });
+  updateFirmasCount();
+  document.getElementById('progressBar').style.width = '0%';
+}
+
+// ===================== GET FORM DATA =====================
+function getFormData() {
+  const getRadio = (name) => {
+    const el = document.querySelector(`input[name="${name}"]:checked`);
+    return el ? el.value : '';
+  };
+  const getCheckboxes = (name) => {
+    return [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(e => e.value).join(', ');
+  };
+  return {
+    fecha: document.getElementById('fecha').value,
+    num_solicitud: document.getElementById('numSolicitud').textContent,
+    departamento: document.getElementById('departamento').value,
+    cargo: document.getElementById('cargo').value,
+    personal_cargo: getRadio('personalCargo'),
+    num_personal: document.getElementById('numPersonal').value,
+    confidencial: getRadio('confidencial'),
+    motivo_vacante: getCheckboxes('motivo'),
+    rango_edad: document.getElementById('rangoEdad').value,
+    sexo: document.getElementById('sexo').value,
+    zona_residencia: document.getElementById('zonaResidencia').value,
+    movilidad: document.getElementById('movilidad').value,
+    licencia: document.getElementById('licencia').value,
+    viaticos: document.getElementById('viaticos').value,
+    titulo_requerido: document.getElementById('tituloReq').value,
+    nivel_secundario: getRadio('secundario'),
+    nivel_terciario: getRadio('terciario'),
+    nivel_universitario: getRadio('universitario'),
+    anos_experiencia: document.getElementById('anosExp').value,
+    posiciones_anteriores: document.getElementById('posAnteriores').value,
+    competencias: document.getElementById('competencias').value,
+    tipo_contrato: document.getElementById('tipoContrato').value,
+    modalidad: document.getElementById('modalidad').value,
+    rango_salario: document.getElementById('rangoSalario').value,
+    fecha_inicio: document.getElementById('fechaInicio').value,
+    prioridad: document.getElementById('prioridad').value,
+    beneficios: document.getElementById('beneficios').value,
+    descripcion_puesto: document.getElementById('descripcionPuesto').value,
+    firma_jefe: firmasData[0].name,
+    firma_gerente: firmasData[1].name,
+    firma_director: firmasData[2].name,
+    firma_rrhh: firmasData[3].name,
+    estado: 'enviado'
+  };
+}
+
+// ===================== PDF =====================
+async function descargarPDF() {
+  showToast('Generando PDF...', '');
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const data = getFormData();
+
+    // COLORS
+    const NAVY = [26, 26, 110];
+    const PURPLE = [74, 63, 160];
+    const WHITE = [255, 255, 255];
+    const GRAY = [68, 68, 68];
+    const LIGHT = [245, 245, 250];
+    const ACCENT = [240, 165, 0];
+
+    const W = 210, M = 14;
+    let y = 0;
+
+    // Header background
+    doc.setFillColor(...NAVY);
+    doc.rect(0, 0, W, 32, 'F');
+    doc.setFillColor(...ACCENT);
+    doc.rect(0, 32, W, 1.5, 'F');
+
+    // Title
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.setTextColor(...WHITE);
+    doc.text('SOLICITUD BÚSQUEDA DE PERSONAL', W/2, 14, { align: 'center' });
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(200, 200, 220);
+    doc.text('DEFINICIÓN DE PERFIL Y CONDICIONES DE CONTRATACIÓN', W/2, 21, { align: 'center' });
+
+    // Meta row
+    doc.setFillColor(...LIGHT);
+    doc.rect(0, 33.5, W, 10, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(...NAVY);
+    doc.text(`Fecha: ${data.fecha || '—'}`, M, 40);
+    doc.text(`N° de Solicitud: ${data.num_solicitud}`, W - M, 40, { align: 'right' });
+
+    y = 48;
+
+    // Helper functions
+    function sectionTitle(title) {
+      doc.setFillColor(...PURPLE);
+      doc.rect(0, y, W, 8, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.setTextColor(...WHITE);
+      doc.text(title.toUpperCase(), M, y + 5.5);
+      y += 10;
+    }
+
+    function field(label, value, x, w, yPos) {
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(6.5);
+      doc.setTextColor(...PURPLE);
+      doc.text(label.toUpperCase(), x, yPos);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      doc.setTextColor(...GRAY);
+      doc.text(value || '—', x, yPos + 4.5);
+      doc.setDrawColor(200, 200, 210);
+      doc.line(x, yPos + 5.5, x + w, yPos + 5.5);
+    }
+
+    // DEPARTAMENTO SOLICITANTE
+    sectionTitle('Departamento Solicitante');
+    const hw = (W - M*2 - 6) / 2;
+    field('Departamento', data.departamento, M, hw, y);
+    field('Cargo / Puesto', data.cargo, M + hw + 6, hw, y);
+    y += 12;
+    field('Personal a Cargo', data.personal_cargo + (data.num_personal ? ` — N° ${data.num_personal}` : ''), M, 60, y);
+    field('Búsqueda Confidencial', data.confidencial, M + 66, 50, y);
+    field('Motivo de la Vacante', data.motivo_vacante || '—', M + 122, W - M - 122, y);
+    y += 14;
+
+    // PERFIL
+    sectionTitle('Perfil del Candidato');
+    const tw = (W - M*2 - 12) / 3;
+    field('Rango de Edad', data.rango_edad, M, tw, y);
+    field('Sexo', data.sexo, M + tw + 6, tw, y);
+    field('Zona de Residencia', data.zona_residencia, M + tw*2 + 12, tw, y);
+    y += 12;
+    field('Movilidad', data.movilidad, M, tw, y);
+    field('Licencia Requerida', data.licencia, M + tw + 6, tw, y);
+    field('Se Abonará Viáticos', data.viaticos, M + tw*2 + 12, tw, y);
+    y += 14;
+
+    // ESTUDIOS
+    sectionTitle('Nivel de Estudios Alcanzados');
+    field('Título Requerido', data.titulo_requerido, M, W - M*2, y);
+    y += 12;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7.5);
+    doc.setTextColor(...GRAY);
+    doc.text(`Secundario: ${data.nivel_secundario || 'N/A'}`, M, y);
+    doc.text(`Terciario: ${data.nivel_terciario || 'N/A'}`, M + 60, y);
+    doc.text(`Universitario: ${data.nivel_universitario || 'N/A'}`, M + 120, y);
+    y += 12;
+
+    // ANTIGÜEDAD
+    sectionTitle('Antigüedad Requerida');
+    field('Años de Experiencia Mínima', data.anos_experiencia, M, 80, y);
+    field('Posiciones Anteriores', data.posiciones_anteriores, M + 86, W - M - 86, y);
+    y += 12;
+    // Competencias multiline
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(6.5);
+    doc.setTextColor(...PURPLE);
+    doc.text('COMPETENCIAS REQUERIDAS', M, y);
+    y += 4;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...GRAY);
+    const compLines = doc.splitTextToSize(data.competencias || '—', W - M*2);
+    doc.text(compLines, M, y);
+    y += compLines.length * 4 + 6;
+
+    // CONTRATACIÓN
+    sectionTitle('Condiciones de Contratación');
+    field('Tipo de Contratación', data.tipo_contrato, M, hw, y);
+    field('Modalidad', data.modalidad, M + hw + 6, hw, y);
+    y += 12;
+    field('Rango Salarial', data.rango_salario, M, tw, y);
+    field('Fecha Inicio Estimada', data.fecha_inicio, M + tw + 6, tw, y);
+    field('Prioridad', data.prioridad, M + tw*2 + 12, tw, y);
+    y += 12;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(6.5);
+    doc.setTextColor(...PURPLE);
+    doc.text('BENEFICIOS ADICIONALES', M, y);
+    y += 4;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...GRAY);
+    const benLines = doc.splitTextToSize(data.beneficios || '—', W - M*2);
+    doc.text(benLines, M, y);
+    y += benLines.length * 4 + 4;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(6.5);
+    doc.setTextColor(...PURPLE);
+    doc.text('DESCRIPCIÓN DEL PUESTO / TAREAS PRINCIPALES', M, y);
+    y += 4;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...GRAY);
+    const descLines = doc.splitTextToSize(data.descripcion_puesto || '—', W - M*2);
+    doc.text(descLines, M, y);
+    y += descLines.length * 4 + 8;
+
+    // FIRMAS
+    if (y > 220) { doc.addPage(); y = 20; }
+    sectionTitle('Firmas de Autorización');
+    const labels = ['Jefe/Zonal', 'Gerente', 'Director', 'Aprobación RRHH'];
+    const fw = (W - M*2 - 18) / 4;
+    labels.forEach((label, i) => {
+      const fx = M + i * (fw + 6);
+      // Box
+      doc.setDrawColor(200, 200, 210);
+      doc.setFillColor(250, 250, 252);
+      doc.rect(fx, y, fw, 32, 'FD');
+      // Firma image
+      if (firmasData[i].signed && firmasData[i].dataUrl) {
+        try {
+          doc.addImage(firmasData[i].dataUrl, 'PNG', fx + 2, y + 2, fw - 4, 18);
+        } catch(e) {}
+      }
+      // Line
+      doc.setDrawColor(180, 180, 200);
+      doc.line(fx + 3, y + 22, fx + fw - 3, y + 22);
+      // Name
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(6.5);
+      doc.setTextColor(...NAVY);
+      doc.text(firmasData[i].name || '—', fx + fw/2, y + 27, { align: 'center', maxWidth: fw - 4 });
+      // Label
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(6);
+      doc.setTextColor(...PURPLE);
+      doc.text(label.toUpperCase(), fx + fw/2, y + 31, { align: 'center' });
+    });
+    y += 38;
+
+    // Footer
+    doc.setFillColor(...NAVY);
+    doc.rect(0, 285, W, 12, 'F');
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(...WHITE);
+    doc.text(`${CONFIG.empresa} — Solicitud N° ${data.num_solicitud} — ${new Date().toLocaleDateString('es-AR')}`, W/2, 292, { align: 'center' });
+
+    const filename = `Solicitud_busqueda_${data.num_solicitud}_${data.fecha || 'sin-fecha'}.pdf`;
+    doc.save(filename);
+    showToast('PDF descargado ✓', 'success');
+    return { doc, filename, data };
+  } catch(err) {
+    console.error(err);
+    showToast('Error al generar PDF: ' + err.message, 'error');
+    return null;
+  }
+}
+
+// ===================== SUPABASE =====================
+async function guardarEnSupabase(data) {
+  if (!CONFIG.supabaseUrl || !CONFIG.supabaseKey) return null;
+  try {
+    const res = await fetch(`${CONFIG.supabaseUrl}/rest/v1/solicitudes_personal`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': CONFIG.supabaseKey,
+        'Authorization': `Bearer ${CONFIG.supabaseKey}`,
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) throw new Error(`Supabase: ${res.status} ${res.statusText}`);
+    return await res.json();
+  } catch(err) {
+    console.error('Supabase error:', err);
+    throw err;
+  }
+}
+
+// ===================== DRIVE (via Supabase Edge Function) =====================
+async function subirADrive(pdfBlob, filename) {
+  if (!CONFIG.supabaseUrl || !CONFIG.supabaseKey || !CONFIG.driveFolderId) return null;
+  try {
+    const formData = new FormData();
+    formData.append('file', pdfBlob, filename);
+    formData.append('folderId', CONFIG.driveFolderId);
+
+    const res = await fetch(`${CONFIG.supabaseUrl}/functions/v1/upload-to-drive`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${CONFIG.supabaseKey}`
+      },
+      body: formData
+    });
+    if (!res.ok) throw new Error(`Drive upload: ${res.status}`);
+    return await res.json();
+  } catch(err) {
+    console.error('Drive error:', err);
+    throw err;
+  }
+}
+
+// ===================== ENVIAR =====================
+async function enviarSolicitud() {
+  const data = getFormData();
+  if (!data.departamento || !data.cargo) {
+    showToast('Completá al menos Departamento y Cargo', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('btnEnviar');
+  btn.disabled = true;
+  btn.textContent = '⏳ Enviando...';
+
+  try {
+    showToast('Generando PDF...', '');
+
+    // 1. Generate PDF
+    const { jsPDF } = window.jspdf;
+    // Re-generate PDF bytes
+    const pdfResult = await descargarPDF();
+    if (!pdfResult) throw new Error('Error generando PDF');
+
+    // 2. Save to Supabase DB
+    if (CONFIG.supabaseUrl && CONFIG.supabaseKey) {
+      showToast('Guardando en base de datos...', '');
+      try {
+        await guardarEnSupabase(data);
+        showToast('Guardado en Supabase ✓', 'success');
+      } catch(e) {
+        showToast('Error Supabase: ' + e.message, 'error');
+      }
+    }
+
+    // 3. Upload to Drive (requires Supabase Edge Function)
+    if (CONFIG.driveFolderId && CONFIG.supabaseUrl) {
+      showToast('Subiendo a Google Drive...', '');
+      try {
+        const pdfBytes = pdfResult.doc.output('blob');
+        const filename = `Solicitud_busqueda_${data.num_solicitud}_${data.fecha}.pdf`;
+        await subirADrive(pdfBytes, filename);
+        showToast('¡Subido a Drive ✓!', 'success');
+      } catch(e) {
+        showToast('Drive: ' + e.message + ' (configurá la Edge Function)', 'error');
+      }
+    }
+
+    showToast('¡Solicitud enviada con éxito! ✓', 'success');
+    btn.textContent = '✓ Solicitud enviada';
+    btn.style.background = '#2ecc71';
+
+  } catch(err) {
+    showToast('Error: ' + err.message, 'error');
+    btn.disabled = false;
+    btn.textContent = '✉ Enviar solicitud';
+  }
+}
+
+// ===================== TOAST =====================
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  const m = document.getElementById('toastMsg');
+  const ic = document.getElementById('toastIcon');
+  t.className = 'toast show';
+  if (type === 'success') { t.classList.add('success'); ic.textContent = '✓'; }
+  else if (type === 'error') { t.classList.add('error'); ic.textContent = '✕'; }
+  else { ic.textContent = '⏳'; }
+  m.textContent = msg;
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+</script>
+</body>
+</html>
